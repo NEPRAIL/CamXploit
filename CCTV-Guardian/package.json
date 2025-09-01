@@ -10,7 +10,8 @@
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "worker:run": "tsx worker/guardian.ts",
-    "worker:test": "tsx worker/test-brute-force.ts"
+    "worker:test": "tsx worker/test-brute-force.ts",
+    "worker:demo": "tsx worker/demo-brute-force.ts"
   },
   "dependencies": {
     "base-64": "^1.0.0",
