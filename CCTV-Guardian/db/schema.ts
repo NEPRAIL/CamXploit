@@ -24,3 +24,16 @@ export const checks = pgTable("checks", {
   detail: text("detail"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export const credentialTests = pgTable("credential_tests", {
+  id: serial("id").primaryKey(),
+  cameraId: integer("camera_id").notNull(),
+  username: varchar("username", { length: 120 }),
+  password: varchar("password", { length: 120 }),
+  protocol: varchar("protocol", { length: 10 }).notNull(),
+  success: boolean("success").notNull(),
+  responseCode: integer("response_code"),
+  responseTime: integer("response_time_ms"),
+  detail: text("detail"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});

@@ -25,6 +25,31 @@ const COMMON_PATHS = [
   "/axis-cgi/mjpg/video.cgi",
   "/cgi-bin/mjpg/video.cgi",
   "/snapshot.jpg",
+  // Enhanced paths for comprehensive scanning
+  "/web/",
+  "/webpages/",
+  "/live",
+  "/live.htm",
+  "/livestream",
+  "/videostream.cgi",
+  "/video/mjpg.cgi",
+  "/mjpg/video.cgi",
+  "/cgi-bin/viewer/video.jpg",
+  "/image.jpg",
+  "/image/jpeg.cgi",
+  "/jpg/image.jpg",
+  "/cgi-bin/snapshot.cgi",
+  "/axis-cgi/jpg/image.cgi",
+  "/onvif/",
+  "/device_service",
+  "/MediaInput/",
+  "/rtsp/",
+  "/video1",
+  "/channel1",
+  "/cam/realmonitor",
+  "/videostream.asf",
+  "/GetData.cgi",
+  "/decoder_control.cgi"
 ];
 
 function headOrGet(url: string, timeout: number): Promise<{ code: number; headers: Record<string, string | string[] | undefined> }> {
@@ -53,22 +78,37 @@ export async function checkHTTP(opts: Opts): Promise<{ status: HttpStatus; laten
     const status = mapHttpCodeToStatus(root.code, root.headers);
     const server = (root.headers["server"] || root.headers["Server"]) as string | undefined;
     let found: string[] = [];
+    let authEndpoints: string[] = [];
 
-    // If online or auth, quickly sample a few common endpoints
-    for (const p of COMMON_PATHS) {
+    // If online or auth, comprehensively scan common endpoints
+    const pathsToCheck = status === "online" || status === "auth_required" ? COMMON_PATHS : COMMON_PATHS.slice(0, 8);
+    
+    for (const p of pathsToCheck) {
       try {
-        const r = await headOrGet(base + p, timeoutMs);
+        const r = await headOrGet(base + p, Math.min(timeoutMs, 3000)); // Shorter timeout for bulk scanning
         if ([200, 204, 206, 301, 302, 401, 403].includes(r.code)) {
           found.push(`${p}(${r.code})`);
-          if (found.length >= 6) break;
+          
+          // Track authentication-required endpoints
+          if (r.code === 401 || r.code === 403) {
+            authEndpoints.push(p);
+          }
+          
+          if (found.length >= 12) break; // Increased limit for comprehensive scanning
         }
       } catch {}
+    }
+
+    // Enhanced detail with authentication info
+    let detail = `server=${server || "unknown"}; endpoints=${found.join(",")}`;
+    if (authEndpoints.length > 0) {
+      detail += `; auth_endpoints=${authEndpoints.join(",")}`;
     }
 
     return {
       status,
       latencyMs: Date.now() - start,
-      detail: `server=${server || ""}; endpoints=${found.join(",")}`.slice(0, 500),
+      detail: detail.slice(0, 800), // Increased detail length
     };
   } catch (e: any) {
     const msg = String(e?.message || e);
