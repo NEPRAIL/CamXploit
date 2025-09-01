@@ -1,7 +1,5 @@
-module.exports = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
-  images: {
-    domains: ['example.com'], // Add your authorized camera domains here
-  },
 };
+module.exports = nextConfig;
